@@ -7,7 +7,7 @@ import { messageReceived } from './actions';
 
 const endpoint =
   process.env.NODE_ENV === 'production'
-    ? 'https://socketio-experiment.herokuapp.com:4000'
+    ? window.location.hostname
     : 'http://localhost:4000';
 
 const AppWrapper = styled.div``;

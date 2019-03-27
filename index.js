@@ -15,6 +15,7 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 io.on('connection', socket => {
   console.log('new socketio connection');
   socket.on('disconnect', () => console.log('client disconnected'));

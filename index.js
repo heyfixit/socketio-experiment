@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
@@ -14,10 +15,6 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
-app.get('/', (req, res) => {
-  res.send(process.env.MOTD || 'API up and running!');
-});
-
 io.on('connection', socket => {
   console.log('new socketio connection');
   socket.on('disconnect', () => console.log('client disconnected'));
@@ -27,6 +24,10 @@ io.on('connection', socket => {
   });
 });
 
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
 
 server.listen(port, () => {
   console.log(`\n*** API running on  port ${port} ***\n`);

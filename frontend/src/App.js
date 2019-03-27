@@ -14,6 +14,7 @@ const Canvas = styled.canvas`
 `;
 
 const App = props => {
+  console.log(process.env);
   const [canvas] = useState(React.createRef());
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastCoords, setLastCoords] = useState(null);

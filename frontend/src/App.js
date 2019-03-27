@@ -5,7 +5,10 @@ import { connect } from 'react-redux';
 
 import { messageReceived } from './actions';
 
-const endpoint = process.env.SOCKET_ENDPOINT || 'http://localhost:4000';
+const endpoint =
+  process.env.NODE_ENV === 'production'
+    ? 'https://socketio-experiment.herokuapp.com:4000'
+    : 'http://localhost:4000';
 
 const AppWrapper = styled.div``;
 
@@ -14,7 +17,6 @@ const Canvas = styled.canvas`
 `;
 
 const App = props => {
-  console.log(process.env);
   const [canvas] = useState(React.createRef());
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastCoords, setLastCoords] = useState(null);
@@ -34,7 +36,7 @@ const App = props => {
     ctx.canvas.height = window.innerHeight;
 
     const handleResize = () => {
-      const temp = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height);
+      const temp = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.canvas.width = window.innerWidth;
       ctx.canvas.height = window.innerHeight;
       ctx.putImageData(temp, 0, 0);

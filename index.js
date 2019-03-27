@@ -1,23 +1,36 @@
-require('dotenv').config();
 const express = require('express');
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 const cors = require('cors');
 const helmet = require('helmet');
+const port = process.env.PORT || 4000;
 
 // const actionsRouter = require('./actions/router');
 // const projectsRouter = require('./projects/router');
-
-const server = express();
-const port = process.env.PORT || 4000;
-server.use(cors());
-server.use(helmet());
-server.use(express.json());
-
 // server.use('/api/projects', projectsRouter);
 // server.use('/api/actions', actionsRouter);
-server.use('/', (req, res) => {
+
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+app.get('/', (req, res) => {
   res.send(process.env.MOTD || 'API up and running!');
 });
 
-server.listen(port, () =>
-  console.log(`\n*** API running on  port ${port} ***\n`)
-);
+io.on('connection', socket => {
+  console.log('new socketio connection');
+  socket.on('disconnect', () => console.log('client disconnected'));
+  // socket.on('drawing', data => {});
+  socket.on('draw-line', data => {
+    socket.broadcast.emit('draw-line', data);
+  });
+});
+
+
+server.listen(port, () => {
+  console.log(`\n*** API running on  port ${port} ***\n`);
+  // setInterval(() => {
+  //   io.sockets.emit('test', 'test');
+  // }, 1000);
+});

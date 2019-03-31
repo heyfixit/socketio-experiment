@@ -12,8 +12,6 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend/build')));
 io.on('connection', socket => {
-  console.log('new socketio connection');
-  socket.on('disconnect', () => console.log('client disconnected'));
   socket.on('draw-line', data => {
     socket.broadcast.emit('draw-line', data);
   });

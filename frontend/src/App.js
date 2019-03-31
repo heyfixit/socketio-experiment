@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import socketIOClient from 'socket.io-client';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { connect } from 'react-redux';
 
 import { messageReceived } from './actions';
+
+const svgUrl = (svgString, width, height, viewBoxWidth, viewBoxHeight) => {
+  viewBoxWidth = viewBoxWidth || width;
+  viewBoxHeight = viewBoxHeight || width;
+  return `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${width}" height="${height}" viewBox="0 0 ${viewBoxWidth} ${viewBoxHeight}">${svgString}</svg>')`;
+};
 
 const endpoint =
   process.env.NODE_ENV === 'production'
@@ -14,6 +20,15 @@ const AppWrapper = styled.div``;
 
 const Canvas = styled.canvas`
   background-color: black;
+  cursor: ${props => {
+    return `${svgUrl(
+      `<circle cx="2" cy="2" r="2" fill="${props.cursorColor}" stroke="${props.cursorColor}"/>`,
+      5,
+      5,
+      5,
+      5
+    )} 2.5 2.5, auto`;
+  }};
 `;
 
 const App = props => {
@@ -64,6 +79,7 @@ const App = props => {
     <AppWrapper>
       <Canvas
         ref={canvas}
+        cursorColor={color}
         onMouseUp={() => {
           setIsDrawing(false);
           socket.emit('drawing', { drawing: false });

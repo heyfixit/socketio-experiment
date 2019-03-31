@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import socketIOClient from 'socket.io-client';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
+import Color from 'color';
 
 import { messageReceived } from './actions';
+
+const randomColor = () => {
+  const colors = [];
+  for (let i = 0; i < 3; i++) {
+    colors.push(Math.floor(Math.random() * 255));
+  }
+  return Color.rgb(colors);
+};
 
 const svgUrl = (svgString, width, height, viewBoxWidth, viewBoxHeight) => {
   viewBoxWidth = viewBoxWidth || width;
@@ -22,12 +31,12 @@ const Canvas = styled.canvas`
   background-color: black;
   cursor: ${props => {
     return `${svgUrl(
-      `<circle cx="2" cy="2" r="2" fill="${props.cursorColor}" stroke="${props.cursorColor}"/>`,
-      5,
-      5,
-      5,
-      5
-    )} 2.5 2.5, auto`;
+      `<circle cx="3" cy="3" r="3" fill="${props.cursorColor}" stroke="black"/>`,
+      6,
+      6,
+      6,
+      6
+    )} 3 3, auto`;
   }};
 `;
 
@@ -36,13 +45,8 @@ const App = props => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastCoords, setLastCoords] = useState(null);
   const [socket, setSocket] = useState(null);
-  const [color] = useState(() => {
-    const colors = [];
-    for (let i = 0; i < 3; i++) {
-      colors.push(Math.floor(Math.random() * 255));
-    }
-    return `rgb(${colors.join(',')})`;
-  });
+  const [color, setColor] = useState(() => randomColor());
+  const colorString = color.rgb().string();
 
   useEffect(() => {
     setSocket(socketIOClient(endpoint));
@@ -80,11 +84,22 @@ const App = props => {
       <Canvas
         ref={canvas}
         cursorColor={color}
+        onWheel={e => {
+          if (e.deltaY < 0) {
+            setColor(color.lighten(0.1));
+          } else {
+            setColor(color.darken(0.1));
+          }
+        }}
         onMouseUp={() => {
           setIsDrawing(false);
           socket.emit('drawing', { drawing: false });
         }}
         onMouseDown={e => {
+          if(e.button === 1) {
+            setColor(randomColor());
+            return;
+          }
           setLastCoords({
             x: e.clientX,
             y: e.clientY
@@ -92,7 +107,7 @@ const App = props => {
           setIsDrawing(true);
           socket.emit('drawing', {
             drawing: true,
-            color,
+            color: colorString,
             coords: { x: e.clientX, y: e.clientY }
           });
         }}
@@ -103,11 +118,11 @@ const App = props => {
             ctx.moveTo(lastCoords.x, lastCoords.y);
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = colorString;
             ctx.lineTo(e.clientX, e.clientY);
             ctx.stroke();
             socket.emit('draw-line', {
-              color,
+              color: colorString,
               from: lastCoords,
               to: { x: e.clientX, y: e.clientY }
             });
